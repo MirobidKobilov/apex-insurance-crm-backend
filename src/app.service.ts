@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AppService {
-  getHello(): string {
-    return 'Project Management';
+  welcome(): any {
+    return {
+      name: 'Crm Project Management Service',
+      docs: '/docs'
+    };
   }
 }

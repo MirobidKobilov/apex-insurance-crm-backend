@@ -2,10 +2,15 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { WinstonModule } from 'nest-winston';
-import { logConfiguration } from './configs';
+import { logConfiguration, TypeOrmConfigService } from '@configs';
+import {TypeOrmModule} from "@nestjs/typeorm";
+
 
 @Module({
-  imports: [WinstonModule.forRoot(logConfiguration)],
+  imports: [ TypeOrmModule.forRootAsync({
+    useClass: TypeOrmConfigService,
+  }),
+    WinstonModule.forRoot(logConfiguration)],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -18,6 +18,12 @@
       ],
       "@configs": [
         "configs"
+      ],
+      "@utils": [
+        "utils"
+      ],
+      "@modules": [
+        "modules"
       ]
     }
   }
