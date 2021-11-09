@@ -12,7 +12,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
             username: DB_USER,
             password: DB_PASS,
             database: DB_NAME,
-            entities: [__dirname + DB_ENTITY_PATH],
+            // entities: [__dirname + DB_ENTITY_PATH],
             autoLoadEntities: true,
             synchronize: NODE_ENV === 'dev',
         } as any;
