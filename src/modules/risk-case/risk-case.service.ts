@@ -12,16 +12,16 @@ export class RiskCaseService {
   constructor(
     @InjectRepository(RiskCase)
     private riskCase: Repository<RiskCase>,
-    @InjectRepository(RiskCase)
+    @InjectRepository(RiskType)
     private riskType: Repository<RiskType>
   ) {}
   findAll(paginationQuery: PaginationQueryDto) {
-    const { limit, offset } = paginationQuery;
+    const { limit, page } = paginationQuery;
     return this.riskCase.find({
       where: {
         isDeleted: false,
       },
-      skip: offset,
+      skip: (page -1 ) * limit,
       take: limit,
       relations: ['riskType'],
     });
@@ -37,13 +37,14 @@ export class RiskCaseService {
   }
   
   async create(createDto: CreateRiskCaseDto, ip: string) {
-    const { riskTypeId, title } = createDto;
+    const { riskTypeId, ...riskItems } = createDto;
+    
     const type = await this.riskType.findOne(riskTypeId);
     if(!type) {
       throw new NotFoundException(`Type of Risk with the id #${riskTypeId} not found`)
     }
     const riskCase = this.riskCase.create({
-      title,
+      ...riskItems,
       riskType: type,
       createdIp: ip,
     });
@@ -51,11 +52,20 @@ export class RiskCaseService {
   }
 
   async update(id: number, updateDto: UpdateRiskCaseDto, ip: string) {
-    return await this.riskCase.update(id, {
-      title: updateDto.title,
+    const { riskTypeId, ...riskItems } = updateDto;
+    const type = await this.riskType.findOne(riskTypeId);
+    if(!type) {
+      throw new NotFoundException(`Type of Risk with the id #${riskTypeId} not found`)
+    }
+    const risk =  await this.riskCase.preload({
+      id,
+      ...riskItems,
+      riskType: type,
       modifiedIp: ip,
       modifiedDate: new Date(),
     });
+
+    return await this.riskCase.save(risk);
   }
 
   async remove(id: number) {

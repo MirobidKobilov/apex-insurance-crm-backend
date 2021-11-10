@@ -1,4 +1,14 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateRiskExclusionDto } from './create-risk-exclusion.dto';
+import { ApiProperty } from "@nestjs/swagger";
+import { IsInt, IsOptional, IsString } from "class-validator";
 
-export class UpdateRiskExclusionDto extends PartialType(CreateRiskExclusionDto) {}
+export class UpdateRiskExclusionDto {
+  @IsOptional()
+  @IsString()
+  @ApiProperty()
+  title?: string;
+
+  @IsOptional()
+  @IsInt()
+  @ApiProperty()
+  riskTypeId?: number;
+}

@@ -18,10 +18,10 @@ export class RiskType extends BaseEntity {
   @ApiProperty({type: () => RiskExclusion})
   riskExclusions: RiskExclusion[];
 
-  @OneToMany(type => RiskCase, riskCase => riskCase.riskType)
+  @OneToMany(type => RiskCase, riskCases => riskCases.riskType)
   @ApiProperty({type: () => RiskCase})
   riskCases: RiskCase[];
 
-  @OneToMany(type => InsuranceClass, insuranceClass => insuranceClass.riskType)
-  InsuranceClass: InsuranceClass[];
+  @OneToMany(type => InsuranceClass, insuranceClasses => insuranceClasses.riskType)
+  insuranceClasses: InsuranceClass[];
 }

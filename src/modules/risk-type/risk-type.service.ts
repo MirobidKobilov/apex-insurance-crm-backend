@@ -13,13 +13,22 @@ export class RiskTypeService {
     private riskType: Repository<RiskType>
   ) {}
 
+  async findForSelect() {
+    const types = await this.riskType
+    .createQueryBuilder("riskType")
+    .select("id")
+    .addSelect("title")
+    .getRawMany();
+    return types;
+  }
+
   findAll(paginationQuery: PaginationQueryDto) {
-    const { limit, offset } = paginationQuery;
+    const { limit, page } = paginationQuery;
     return this.riskType.find({
       where: {
         isDeleted: false,
       },
-      skip: offset,
+      skip: (page -1 ) * limit,
       take: limit,
     });
   }
@@ -41,11 +50,14 @@ export class RiskTypeService {
   }
 
   async update(id: number, updateDto: UpdateRiskTypeDto, ip: string) {
-    return await this.riskType.update(id, {
-      title: updateDto.title,
+    const type =  await this.riskType.preload({
+      id,
+      ...updateDto,
       modifiedIp: ip,
       modifiedDate: new Date(),
     })
+
+    return await this.riskType.save(type)
   }
 
   async remove(id: number) {

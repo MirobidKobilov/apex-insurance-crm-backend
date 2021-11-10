@@ -17,12 +17,12 @@ export class RiskExclusionService {
   ) {}
   
   findAll(paginationQuery: PaginationQueryDto) {
-    const { limit, offset } = paginationQuery;
+    const { limit, page } = paginationQuery;
     return this.riskExclusion.find({
       where: {
         isDeleted: false,
       },
-      skip: offset,
+      skip: (page -1 ) * limit,
       take: limit,
       relations: ['riskType'],
     });
@@ -38,13 +38,13 @@ export class RiskExclusionService {
   }
 
   async create(createDto: CreateRiskExclusionDto, ip: string) {
-    const { riskTypeId, title } = createDto;
+    const { riskTypeId, ...riskItems } = createDto;
     const type = await this.riskType.findOne(riskTypeId);
     if(!type) {
       throw new NotFoundException(`Type of Risk with the id #${riskTypeId} not found`)
     }
     const riskExclusion = this.riskExclusion.create({
-      title,
+      ...riskItems,
       riskType: type,
       createdIp: ip,
     });
@@ -52,11 +52,19 @@ export class RiskExclusionService {
   }
 
   async update(id: number, updateDto: UpdateRiskExclusionDto, ip: string) {
-    return await this.riskExclusion.update(id, {
-      title: updateDto.title,
+    const { riskTypeId, ...riskItems } = updateDto;
+    const type = await this.riskType.findOne(riskTypeId);
+    if(!type) {
+      throw new NotFoundException(`Type of Risk with the id #${riskTypeId} not found`)
+    }
+    const risk =  await this.riskExclusion.preload({
+      id,
+      ...riskItems,
+      riskType: type,
       modifiedIp: ip,
       modifiedDate: new Date(),
     })
+    return await this.riskExclusion.save(risk);
   }
 
   async remove(id: number) {

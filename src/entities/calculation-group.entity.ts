@@ -19,6 +19,6 @@ export class CalculationGroup extends BaseEntity {
   @ApiProperty()
   code: string;
   
-  @OneToMany(type => InsuranceClass, insuranceClass => insuranceClass.calculationGroup)
+  @OneToMany(type => InsuranceClass, insuranceClasses => insuranceClasses.calculationGroup)
   insuranceClasses: InsuranceClass[];
 }

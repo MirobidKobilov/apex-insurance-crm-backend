@@ -12,6 +12,11 @@ export class RiskTypeController {
   findAll(@Query() paginationQuery: PaginationQueryDto) {
     return this.riskTypeService.findAll(paginationQuery);
   }
+
+  @Get('/select')
+  findForSelect() {
+    return this.riskTypeService.findForSelect();
+  }
   
   @Get(':id')
   findOne(@Param('id') id: string) {
