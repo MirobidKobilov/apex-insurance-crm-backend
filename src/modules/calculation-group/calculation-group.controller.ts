@@ -13,6 +13,11 @@ export class CalculationGroupController {
     return this.calculationGroupService.findAll(paginationQuery);
   }
   
+  @Get('/select')
+  findForSelect() {
+    return this.calculationGroupService.findForSelect();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.calculationGroupService.findOne(+id);

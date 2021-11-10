@@ -43,7 +43,7 @@ export class InsuranceClass extends BaseEntity {
   @ManyToOne(type => CalculationGroup, calculationGroup => calculationGroup.insuranceClasses)
   calculationGroup: CalculationGroup;
 
-  @ManyToOne(type => RiskType, riskType => riskType.InsuranceClass)
+  @ManyToOne(type => RiskType, riskType => riskType.insuranceClasses)
   @ApiProperty({type: () => RiskType})
   riskType: RiskType;
 }
