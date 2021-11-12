@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaginationQueryDto } from 'common/dto/pagination-query.dto';
 import { RiskType } from 'entities/risk-type.entity';
@@ -13,6 +13,39 @@ export class RiskTypeService {
     private riskType: Repository<RiskType>
   ) {}
 
+  async findAll(paginationQuery: PaginationQueryDto) {
+    const { limit, page } = paginationQuery;
+    console.log(paginationQuery);
+    
+    const types = await this.riskType.find({
+      where: {
+        isDeleted: false,
+      },
+      skip: (page -1 ) * limit,
+      take: limit,
+    });
+    const total = await this.riskType.count();
+
+    return {
+      items: types,
+      total,
+      page: +page,
+      limit: +limit
+    }
+  }
+
+  async findOne(id: number) {
+    const type = await this.riskType.findOne(id, {
+      where: {
+        isDeleted: false,
+      }
+    });
+    if(!type) {
+      throw new NotFoundException(`Risk Type with the id #${id} not found`)
+    }
+    return type;
+  }
+
   async findForSelect() {
     const types = await this.riskType
     .createQueryBuilder("riskType")
@@ -20,25 +53,6 @@ export class RiskTypeService {
     .addSelect("title")
     .getRawMany();
     return types;
-  }
-
-  findAll(paginationQuery: PaginationQueryDto) {
-    const { limit, page } = paginationQuery;
-    return this.riskType.find({
-      where: {
-        isDeleted: false,
-      },
-      skip: (page -1 ) * limit,
-      take: limit,
-    });
-  }
-
-  async findOne(id: number) {
-    return await this.riskType.findOne(id, {
-      where: {
-        isDeleted: false,
-      }
-    });
   }
 
   async create(createDto: CreateRiskTypeDto, ip: string) {

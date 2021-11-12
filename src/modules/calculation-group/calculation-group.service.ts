@@ -1,4 +1,4 @@
-import { Injectable, Ip } from '@nestjs/common';
+import { Injectable, Ip, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaginationQueryDto } from 'common/dto/pagination-query.dto';
 import { CalculationGroup } from 'entities/calculation-group.entity';
@@ -12,15 +12,34 @@ export class CalculationGroupService {
     @InjectRepository(CalculationGroup)
     private calculationGroup: Repository<CalculationGroup>
   ) {}
-  findAll(paginationQuery: PaginationQueryDto) {
+  async findAll(paginationQuery: PaginationQueryDto) {
     const { limit, page } = paginationQuery;
-    return this.calculationGroup.find({
-      where:{
+    const total = await this.calculationGroup.count();
+    const groups = await this.calculationGroup.find({
+      where: {
         isDeleted: false,
       },
       skip: (page -1 ) * limit,
       take: limit
     });
+    return {
+        items: groups,
+        total,
+        page: +page,
+        limit: +limit
+    }
+  }
+
+  async findOne(id: number) {
+    const group = await this.calculationGroup.findOne(id, {
+      where: {
+        isDeleted: false,
+      }
+    });
+    if(!group) {
+      throw new NotFoundException(`Calculation group with the id #${id} not found`)
+    }
+    return group
   }
 
   async findForSelect() {
@@ -30,16 +49,6 @@ export class CalculationGroupService {
     .addSelect("title")
     .getRawMany();
     return groups;
-
-// result will be like this: [{ id: 1, sum: 25 }, { id: 2, sum: 13 }, ...]
-  }
-
-  async findOne(id: number) {
-    return await this.calculationGroup.findOne(id, {
-      where: {
-        isDeleted: false,
-      }
-    });
   }
 
   async create(createDto: CreateCalculationGroupDto, ip: string) {

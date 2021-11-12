@@ -3,12 +3,26 @@ import { RiskExclusionService } from './risk-exclusion.service';
 import { CreateRiskExclusionDto } from './dto/create-risk-exclusion.dto';
 import { UpdateRiskExclusionDto } from './dto/update-risk-exclusion.dto';
 import { PaginationQueryDto } from 'common/dto/pagination-query.dto';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Risk Exclusion Methods')
 @Controller('risk-exclusion')
 export class RiskExclusionController {
   constructor(private readonly riskExclusionService: RiskExclusionService) {}
   
   @Get()
+  @ApiQuery({
+    name: 'page',
+    example: 1,
+    required: false,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'limit',
+    example: 20,
+    required: false,
+    type: Number,
+  })
   findAll(@Query() paginationQuery: PaginationQueryDto) {
     return this.riskExclusionService.findAll(paginationQuery);
   }

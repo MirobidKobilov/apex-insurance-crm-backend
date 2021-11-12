@@ -16,9 +16,9 @@ export class RiskExclusionService {
     private riskType: Repository<RiskType>
   ) {}
   
-  findAll(paginationQuery: PaginationQueryDto) {
+  async findAll(paginationQuery: PaginationQueryDto) {
     const { limit, page } = paginationQuery;
-    return this.riskExclusion.find({
+    const exclusions = await this.riskExclusion.find({
       where: {
         isDeleted: false,
       },
@@ -26,15 +26,27 @@ export class RiskExclusionService {
       take: limit,
       relations: ['riskType'],
     });
+    const total = await this.riskExclusion.count();
+
+    return {
+      items: exclusions,
+      total,
+      page: +page,
+      limit: +limit
+    } 
   }
   
   async findOne(id: number) {
-    return await this.riskExclusion.findOne(id, {
+    const exclusion =  await this.riskExclusion.findOne(id, {
       where: {
         isDeleted: false,
       },
       relations: ['riskType'],
     });
+    if(!exclusion) {
+      throw new NotFoundException(`Risk exclusion with the id #${id} not found`)
+    }
+    return exclusion;
   }
 
   async create(createDto: CreateRiskExclusionDto, ip: string) {
