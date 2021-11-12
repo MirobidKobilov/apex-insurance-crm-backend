@@ -2,15 +2,28 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Ip, Query } from '@n
 import { InsuranceClassService } from './insurance-class.service';
 import { CreateInsuranceClassDto } from './dto/create-insurance-class.dto';
 import { UpdateInsuranceClassDto } from './dto/update-insurance-class.dto';
-import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { InsuranceClass } from 'entities/insurance-class.entity';
 import { PaginationQueryDto } from 'common/dto/pagination-query.dto';
 
+@ApiTags('Insurance Class Methods')
 @Controller('insurance-class')
 export class InsuranceClassController {
   constructor(private readonly insuranceClassService: InsuranceClassService) {}
 
   @Get()
+  @ApiQuery({
+    name: 'page',
+    example: 1,
+    required: false,
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'limit',
+    example: 20,
+    required: false,
+    type: Number,
+  })
   @ApiOkResponse({
     description: 'Get all Insurance Classes',
     type: [InsuranceClass],

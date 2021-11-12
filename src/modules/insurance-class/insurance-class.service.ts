@@ -12,7 +12,7 @@ import { UpdateInsuranceClassDto } from './dto/update-insurance-class.dto';
 export class InsuranceClassService {
   constructor(
     @InjectRepository(InsuranceClass)
-    private insuranceClassRepository: Repository<InsuranceClass>,
+    private insuranceClass: Repository<InsuranceClass>,
 
     @InjectRepository(RiskType)
     private riskType: Repository<RiskType>,
@@ -20,9 +20,10 @@ export class InsuranceClassService {
     @InjectRepository(CalculationGroup)
     private calculationGroup: Repository<CalculationGroup>,
   ) {}
-  findAll(pagiationQuery: PaginationQueryDto) {
+
+  async findAll(pagiationQuery: PaginationQueryDto) {
     const { limit, page } = pagiationQuery;
-    return this.insuranceClassRepository.find({
+    const classes = await this.insuranceClass.find({
       where: {
         isDeleted: false,
       },
@@ -30,15 +31,27 @@ export class InsuranceClassService {
       take: limit,
       relations: ['calculationGroup', 'riskType'],
     });
+    const total = await this.insuranceClass.count();
+
+    return {
+      items: classes,
+      total,
+      page: +page,
+      limit: +limit
+    }
   }
   
   async findOne(id: number) {
-    return await this.insuranceClassRepository.findOne(id, {
+    const insuranceClass = await this.insuranceClass.findOne(id, {
       where: {
         isDeleted: false,
       },
       relations: ['calculationGroup', 'riskType'],
     });
+    if(!insuranceClass) {
+      throw new NotFoundException(`InsuranceClass with the id #${id} not found`)
+    }
+    return insuranceClass
   }
 
   async create(createDto: CreateInsuranceClassDto, ip: string) {
@@ -51,14 +64,14 @@ export class InsuranceClassService {
     if(!group) {
       throw new NotFoundException(`Calculation Group with the id #${calculationGroupId} not found`)
     }
-    const insuranceClass = this.insuranceClassRepository.create({
+    const insuranceClass = this.insuranceClass.create({
       ...clasItems,
       calculationGroup: group,
       riskType: type,
       createdIp: ip,
     });
 
-    return await this.insuranceClassRepository.save(insuranceClass);
+    return await this.insuranceClass.save(insuranceClass);
   }
   
   async update(id: number, updateDto: UpdateInsuranceClassDto, ip: string) {
@@ -71,7 +84,7 @@ export class InsuranceClassService {
     if(!group) {
       throw new NotFoundException(`Calculation Group with the id #${calculationGroupId} not found`)
     }
-    const insurance =  await this.insuranceClassRepository.preload({
+    const insurance =  await this.insuranceClass.preload({
       id,
       ...classItems,
       calculationGroup: group,
@@ -84,7 +97,7 @@ export class InsuranceClassService {
   }
 
   async remove(id: number) {
-    return this.insuranceClassRepository.update(id, {
+    return this.insuranceClass.update(id, {
       isDeleted: true,
     });
   }

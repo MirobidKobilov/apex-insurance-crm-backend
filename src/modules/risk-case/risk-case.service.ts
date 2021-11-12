@@ -15,9 +15,9 @@ export class RiskCaseService {
     @InjectRepository(RiskType)
     private riskType: Repository<RiskType>
   ) {}
-  findAll(paginationQuery: PaginationQueryDto) {
+  async findAll(paginationQuery: PaginationQueryDto) {
     const { limit, page } = paginationQuery;
-    return this.riskCase.find({
+    const cases = await this.riskCase.find({
       where: {
         isDeleted: false,
       },
@@ -25,15 +25,27 @@ export class RiskCaseService {
       take: limit,
       relations: ['riskType'],
     });
+    const total = await this.riskCase.count();
+
+    return {
+      items: cases,
+      total,
+      page: +page,
+      limit: +limit
+    } 
   }
 
   async findOne(id: number) {
-    return await this.riskCase.findOne(id, {
+    const riskCase =  await this.riskCase.findOne(id, {
       where: {
         isDeleted: false,
       },
       relations: ['riskType'],
     });
+    if(!riskCase) {
+      throw new NotFoundException(`Risk case with the id #${id} not found`)
+    }
+    return riskCase;
   }
   
   async create(createDto: CreateRiskCaseDto, ip: string) {
